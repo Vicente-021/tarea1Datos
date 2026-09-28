@@ -1,0 +1,22 @@
+# Trazas (no subir: MAWI + derivadas)
+*.pcap
+*.pcap.gz
+*.bin
+
+# Datos intermedios grandes
+traza_ddos.bin
+traza_scan.bin
+traza.bin
+
+# Ejecutables compilados
+pcap2bin
+exact_hh
+sketch_detect
+
+# Entorno y caché Python
+.venv/
+__pycache__/
+*.pyc
+
+# Logs y salidas temporales
+*.log
