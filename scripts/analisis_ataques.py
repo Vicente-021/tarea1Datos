@@ -5,8 +5,8 @@ import csv, json, sys
 W, P, D = 60.0, 10.0, 5
 WIDTHS = (256, 1024, 4096)
 ATAQUES = {
-    'ddos': ('gt_ddos.json', 'exact_ddos.csv', 'sk_ddos_w{w}.csv'),
-    'scan': ('gt_scan.json', 'exact_scan.csv', 'sk_scan_w{w}.csv'),
+    'ddos': ('resultados/gt_ddos.json', 'resultados/exact_ddos.csv', 'resultados/sk_ddos_w{w}.csv'),
+    'scan': ('resultados/gt_scan.json', 'resultados/exact_scan.csv', 'resultados/sk_scan_w{w}.csv'),
 }
 SKETCHES = (('CMS', 'cms_f', 'cms_hh', 'cms_med_delta'),
             ('CS',  'cs_f',  'cs_hh',  'cs_delta'))
@@ -103,16 +103,16 @@ def main():
                     eventos.append((nombre, w, tipo, j, t[j], dl[j],
                                     ent(sk[j]['cs_delta']), ent(sk[j]['cms_med_delta'])))
 
-    escribir('resumen_ataques.csv',
+    escribir('resultados/resumen_ataques.csv',
              ['ataque', 'w', 'sketch', 'mem_B', 'MRE_pct', 'MAE_J', 'latencia_s',
               'dif_vs_exacto_ventanas', 'FP', 'FP_previos', 'FN',
               'MAE_delta_todas', 'MAE_delta_ataque'], resumen)
-    escribir('deltas_ataques.csv',
+    escribir('resultados/deltas_ataques.csv',
              ['ataque', 'w', 'tipo', 'win', 't_rel_s', 'exacto', 'CS', 'CMS_mediana',
               'errabs_CS', 'errabs_CMSmed'],
              [(a, w, tp, j, tt, e, cs, cm, abs(cs - e), abs(cm - e))
               for a, w, tp, j, tt, e, cs, cm in eventos])
-    escribir('error_ventanas_ataques.csv',
+    escribir('resultados/error_ventanas_ataques.csv',
              ['ataque', 'w', 'sketch', 'win', 't_rel_s', 'exacto', 'estimado',
               'err_rel_pct'], filas)
 

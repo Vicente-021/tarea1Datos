@@ -33,7 +33,7 @@ def main():
     out.write("key,w,sketch,MAE,MRE_pct,maxAE,mem_counters_B\n")
     for k in keys:
         for w in widths:
-            res = compute(f'exact_{k}.csv', f'sk_{k}_w{w}.csv')
+            res = compute(f'resultados/exact_{k}.csv', f'resultados/sk_{k}_w{w}.csv')
             mem = 7 * 5 * w * 8
             for name in ('CMS', 'CS'):
                 mae, mre, maxae = agg(res[name])

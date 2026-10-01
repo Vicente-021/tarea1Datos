@@ -1,12 +1,8 @@
-# Trazas (no subir: MAWI + derivadas)
+# Trazas (no subir: MAWI + derivadas). Todo lo de datos/ es local.
+datos/
 *.pcap
 *.pcap.gz
 *.bin
-
-# Datos intermedios grandes
-traza_ddos.bin
-traza_scan.bin
-traza.bin
 
 # Ejecutables compilados
 pcap2bin
@@ -20,6 +16,12 @@ __pycache__/
 
 # Logs y salidas temporales
 *.log
+
+# Compilación LaTeX
+main.pdf
+*.aux
+*.out
+*.toc
 
 # Entorno virtual y resultados
 venvVD/

@@ -14,9 +14,11 @@ WIDTHS = (256, 1024, 4096)
 CMS_COL = {256: '#e41a1c', 1024: '#ff7f00', 4096: '#f0c000'}   # tonos calidos
 CS_COL = {256: '#08519c', 1024: '#3182bd', 4096: '#6baed6'}    # tonos frios
 ATAQUES = {
-    'ddos': dict(gt='gt_ddos.json', exact='exact_ddos.csv', sk='sk_ddos_w{w}.csv',
+    'ddos': dict(gt='resultados/gt_ddos.json', exact='resultados/exact_ddos.csv',
+                 sk='resultados/sk_ddos_w{w}.csv',
                  titulo='DDoS (frecuencia por IP de destino)'),
-    'scan': dict(gt='gt_scan.json', exact='exact_scan.csv', sk='sk_scan_w{w}.csv',
+    'scan': dict(gt='resultados/gt_scan.json', exact='resultados/exact_scan.csv',
+                 sk='resultados/sk_scan_w{w}.csv',
                  titulo='Scan (frecuencia por IP de origen)'),
 }
 
@@ -61,7 +63,7 @@ def fig_frecuencia(nombre, cfg):
     ax.grid(True)
     ax.legend(ncol=2, loc='upper left')
     fig.tight_layout()
-    out = f'fig_{nombre}_frecuencia.png'
+    out = f'resultados/figuras/fig_{nombre}_frecuencia.png'
     fig.savefig(out, dpi=300)
     plt.close(fig)
     print('Generado:', out)
@@ -88,7 +90,7 @@ def fig_delta(nombre, cfg):
     fig.suptitle(f'{nombre.upper()}: cambio de frecuencia - {cfg["titulo"]}',
                  fontweight='bold')
     fig.tight_layout()
-    out = f'fig_{nombre}_delta.png'
+    out = f'resultados/figuras/fig_{nombre}_delta.png'
     fig.savefig(out, dpi=300)
     plt.close(fig)
     print('Generado:', out)

@@ -19,21 +19,26 @@ Una clave es *heavy hitter* en la ventana `j` si `f_j(x) >= ⌈φ·N_j⌉`, con 
 
 ```
 sketch_detect.cpp            Programa principal: CMS y CS con ventana deslizante
-analisis_validacion.py       Act. 1: errores de estimación (abs/rel) y memoria
-analisis_ataques.py          Act. 2 y 6.3: MRE, latencia, FP/FN, Δf_j
-plot_ataques.py              Figuras overlay (una por ataque) para el informe
-plot_results.py              Variante de figuras (opcional)
+main.tex                     Informe (≤ 6 páginas)
 codigo_entregado/            Herramientas entregadas (pcap2bin, exact_hh, inject_attack.py)
-exact_{src,dst,ddos,scan}.csv        Ground truth exacto por ventana (exact_hh)
-sk_{key}_w{w}.csv                    Estimaciones de los sketches por ventana
-verify_n_*.csv               Verificación del anillo de contadores (N_j)
-validacion.csv               Tabla de validación de la Act. 1
-resumen_ataques.csv          Tabla resumen: error, memoria y latencia
-error_ventanas_ataques.csv   Error por ventana en las ventanas del ataque
-deltas_ataques.csv           Mayores Δf_j (incrementos/decrementos) y estimaciones
-fig_*_frecuencia.png         Figuras de frecuencia exacta vs estimada
-fig_*_delta.png              Figuras de Δf_j exacto vs CS y CMS-mediana
-gt_ddos.json, gt_scan.json   Ground truth de los ataques inyectados
+scripts/
+  analisis_validacion.py     Act. 1: errores de estimación (abs/rel) y memoria
+  analisis_ataques.py        Act. 2 y 6.3: MRE, latencia, FP/FN, Δf_j
+  plot_ataques.py            Figuras overlay (una por ataque) para el informe
+  plot_extra.py              Figuras nuevas: scatter, histograma de error, frontera MRE-memoria
+  plot_results.py            Variante de figuras (opcional)
+datos/                       Trazas locales (NO se suben; ver .gitignore)
+resultados/
+  gt_ddos.json, gt_scan.json   Ground truth de los ataques inyectados
+  exact_*.csv                  Ground truth exacto por ventana (exact_hh)
+  sk_*.csv                     Estimaciones de los sketches por ventana
+  verify_n_*.csv               Verificación del anillo de contadores (N_j)
+  validacion.csv               Tabla de validación de la Act. 1
+  resumen_ataques.csv          Tabla resumen: error, memoria y latencia
+  error_ventanas_ataques.csv   Error por ventana en las ventanas del ataque
+  deltas_ataques.csv           Mayores Δf_j (incrementos/decrementos) y estimaciones
+  rank_*.csv, stats_*.txt      Caracterización de la traza
+  figuras/                     Figuras del informe (PNG)
 ```
 
 ## Reproducibilidad
@@ -56,14 +61,15 @@ g++ -O2 -march=native -std=c++17 -Wall -Wextra -o sketch_detect sketch_detect.cp
 
 ```bash
 curl -L -C - -O https://mawi.wide.ad.jp/mawi/samplepoint-F/2018/201812031400.pcap.gz
-zcat 201812031400.pcap.gz | ./codigo_entregado/codigo_entregado/pcap2bin > traza.bin
+mv 201812031400.pcap.gz datos/
+zcat datos/201812031400.pcap.gz | ./codigo_entregado/codigo_entregado/pcap2bin > datos/traza.bin
 ```
 
 ### 2. Caracterización de la traza
 
 ```bash
-./codigo_entregado/codigo_entregado/exact_hh traza.bin --stats --key src
-./codigo_entregado/codigo_entregado/exact_hh traza.bin --stats --key dst
+./codigo_entregado/codigo_entregado/exact_hh datos/traza.bin --stats --key src | tee resultados/stats_src.txt
+./codigo_entregado/codigo_entregado/exact_hh datos/traza.bin --stats --key dst | tee resultados/stats_dst.txt
 ```
 
 ### 3. Actividad 1 — validación contra el conteo exacto
@@ -71,47 +77,54 @@ zcat 201812031400.pcap.gz | ./codigo_entregado/codigo_entregado/pcap2bin > traza
 Verificación obligatoria del anillo (`N_j` debe coincidir exactamente con `exact_hh`):
 
 ```bash
-./sketch_detect traza.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 1024 --verify-n verify_n_src.csv
-./codigo_entregado/codigo_entregado/exact_hh traza.bin --key src -W 60 --delta 10 --phi 0.01 --out-windows exact_win_src.csv
+./sketch_detect datos/traza.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 1024 \
+    --verify-n resultados/verify_n_src.csv
+./codigo_entregado/codigo_entregado/exact_hh datos/traza.bin --key src -W 60 --delta 10 --phi 0.01 \
+    --out-windows resultados/exact_win_src.csv
 # comparar las columnas N de ambos archivos (debe ser idéntica ventana por ventana)
 ```
 
 Consultas de un conjunto de claves (top src/dst) y estimación con `w ∈ {256, 1024, 4096}`:
 
 ```bash
-./codigo_entregado/codigo_entregado/exact_hh traza.bin --key src -W 60 --delta 10 --phi 0.01 \
+./codigo_entregado/codigo_entregado/exact_hh datos/traza.bin --key src -W 60 --delta 10 --phi 0.01 \
     --query 203.83.117.211 --query 203.83.101.148 --query 31.141.14.54 --query 202.12.82.146 \
-    --out-query exact_src.csv
-./sketch_detect traza.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
+    --out-query resultados/exact_src.csv
+./sketch_detect datos/traza.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
     --query 203.83.117.211 --query 203.83.101.148 --query 31.141.14.54 --query 202.12.82.146 \
-    --out-query sk_src_w256.csv
+    --out-query resultados/sk_src_w256.csv
 # repetir para w = 1024 y 4096, y para --key dst con sus claves
-python3 analisis_validacion.py > validacion.csv
+python3 scripts/analisis_validacion.py > resultados/validacion.csv
 ```
 
 ### 4. Actividad 2 — ataques sintéticos
 
 ```bash
-python3 codigo_entregado/codigo_entregado/inject_attack.py ddos --base traza.bin \
-    --out traza_ddos.bin --gt gt_ddos.json --start 300 --duration 30 --pps 10000 --sources 4000
-python3 codigo_entregado/codigo_entregado/inject_attack.py scan --base traza.bin \
-    --out traza_scan.bin --gt gt_scan.json --start 300 --duration 30 --pps 8000 --dst-count 60000
+python3 codigo_entregado/codigo_entregado/inject_attack.py ddos --base datos/traza.bin \
+    --out datos/traza_ddos.bin --gt resultados/gt_ddos.json \
+    --start 300 --duration 30 --pps 10000 --sources 4000
+python3 codigo_entregado/codigo_entregado/inject_attack.py scan --base datos/traza.bin \
+    --out datos/traza_scan.bin --gt resultados/gt_scan.json \
+    --start 300 --duration 30 --pps 8000 --dst-count 60000
 
 # ground truth exacto (clave desde el JSON: 163.210.30.13 y 198.18.0.7)
-./codigo_entregado/codigo_entregado/exact_hh traza_ddos.bin --key dst -W 60 --delta 10 --phi 0.01 \
-    --query 163.210.30.13 --out-query exact_ddos.csv
-./codigo_entregado/codigo_entregado/exact_hh traza_scan.bin --key src -W 60 --delta 10 --phi 0.01 \
-    --query 198.18.0.7 --out-query exact_scan.csv
+./codigo_entregado/codigo_entregado/exact_hh datos/traza_ddos.bin --key dst -W 60 --delta 10 --phi 0.01 \
+    --query 163.210.30.13 --out-query resultados/exact_ddos.csv
+./codigo_entregado/codigo_entregado/exact_hh datos/traza_scan.bin --key src -W 60 --delta 10 --phi 0.01 \
+    --query 198.18.0.7 --out-query resultados/exact_scan.csv
 
 # sketches sobre las trazas con ataque, para cada w en {256, 1024, 4096}
-./sketch_detect traza_ddos.bin --key dst -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
-    --query 163.210.30.13 --out-query sk_ddos_w256.csv --verify-n verify_n_ddos_w256.csv
-./sketch_detect traza_scan.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
-    --query 198.18.0.7 --out-query sk_scan_w256.csv --verify-n verify_n_scan_w256.csv
+./sketch_detect datos/traza_ddos.bin --key dst -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
+    --query 163.210.30.13 --out-query resultados/sk_ddos_w256.csv \
+    --verify-n resultados/verify_n_ddos_w256.csv
+./sketch_detect datos/traza_scan.bin --key src -W 60 --delta 10 --phi 0.01 -d 5 -w 256 \
+    --query 198.18.0.7 --out-query resultados/sk_scan_w256.csv \
+    --verify-n resultados/verify_n_scan_w256.csv
 
 # análisis (MRE, latencia, FP/FN, Δf) y figuras
-python3 analisis_ataques.py
-python3 plot_ataques.py
+python3 scripts/analisis_ataques.py
+python3 scripts/plot_ataques.py
+python3 scripts/plot_extra.py        # figuras nuevas (scatter, histograma, frontera)
 ```
 
 ### 5. Resultados

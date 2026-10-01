@@ -21,7 +21,7 @@ COLORS_CS  = {256: '#ff7f00', 1024: '#984ea3', 4096: '#a65628'}
 
 def load_data(key_type):
     """Carga los datos exactos y los resultados para cada w."""
-    exact_file = f'exact_{key_type}.csv'
+    exact_file = f'resultados/exact_{key_type}.csv'
     if not os.path.exists(exact_file):
         raise FileNotFoundError(f"No se encontró el archivo exacto: {exact_file}")
     
@@ -31,7 +31,7 @@ def load_data(key_type):
 
     sk_data = {}
     for w in WIDTHS:
-        sk_file = f'sk_{key_type}_w{w}.csv'
+        sk_file = f'resultados/sk_{key_type}_w{w}.csv'
         if os.path.exists(sk_file):
             sk_data[w] = pd.read_csv(sk_file)
         else:
@@ -107,16 +107,16 @@ def main():
     print("Generando gráficos para el informe...")
     
     # Figura 1: Frecuencia DDoS (IP víctima)
-    plot_frequency('dst', 'Ataque DDoS (IP Víctima)', 'fig1_ddos_frecuencia.png')
+    plot_frequency('dst', 'Ataque DDoS (IP Víctima)', 'resultados/figuras/fig1_ddos_frecuencia.png')
     
     # Figura 2: Frecuencia Scan (IP atacante)
-    plot_frequency('src', 'Ataque Scan (IP Atacante)', 'fig2_scan_frecuencia.png')
+    plot_frequency('src', 'Ataque Scan (IP Atacante)', 'resultados/figuras/fig2_scan_frecuencia.png')
     
     # Figura 3: Cambio de Frecuencia Δf_j para DDoS
-    plot_delta('dst', 'Ataque DDoS (IP Víctima)', 'fig3_ddos_delta.png', target_w=1024)
+    plot_delta('dst', 'Ataque DDoS (IP Víctima)', 'resultados/figuras/fig3_ddos_delta.png', target_w=1024)
     
     # Figura 4: Cambio de Frecuencia Δf_j para Scan
-    plot_delta('src', 'Ataque Scan (IP Atacante)', 'fig4_scan_delta.png', target_w=1024)
+    plot_delta('src', 'Ataque Scan (IP Atacante)', 'resultados/figuras/fig4_scan_delta.png', target_w=1024)
 
 if __name__ == '__main__':
     main()
